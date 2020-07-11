@@ -21,10 +21,10 @@ uniform float light_intensity[100];
 const float inf = 100000;
 const float MIN_DIST = 0.001;
 const float DELTA = 0.001;
-const int MAX_ITTERS = 100;
-const float STEP_COEF = 1;
+const int MAX_ITTERS = 110;
+const float STEP_COEF = 0.75;
 
-const float MODULE = 10;
+float MODULE = 0;
 
 const vec3 AMBIENT = vec3(0, 0, 0);
 
@@ -48,90 +48,148 @@ float smin(float a, float b, float k)
     return min(a, b) - h*h*k*(1.0/4.0);
 }
 
-float intersect_sdf(float dist_first, float dist_second) {
+// normal operations
+
+float intersection_sdf(float dist_first, float dist_second) {
 	return max(dist_first, dist_second);
 }
 
-float union_sdf(float dist_first, float dist_second, float smoothness) {
-	return smin(dist_first, dist_second, smoothness);
+float union_sdf(float dist_first, float dist_second) {
+	return min(dist_first, dist_second);
 }
 
-float difference_sdf(float dist_first, float dist_second) {
+float substraction_sdf(float dist_first, float dist_second) {
 	return max(dist_first, -dist_second);
 }
+
+// smooth operations by hg_sdf
+
+float union_sdf_smooth(float a, float b, float r) {
+	vec2 u = max(vec2(r - a, r - b), vec2(0));
+	return max(r, min(a, b)) - length(u);
+}
+
+float intersection_sdf_smooth(float a, float b, float r) {
+	vec2 u = max(vec2(r + a, r + b), vec2(0));
+	return min(-r, max(a, b)) + length(u);
+}
+
+float substraction_sdf_smooth(float a, float b, float r) {
+	return intersection_sdf_smooth(a, -b, r);
+}
+
+// point operations by kctf
 
 vec3 moduled_point(vec3 p, float module) {
 	if (module == 0.0) {
 		return p;
 	}
-	return mod(p + module / 2.0, module) - module / 2.0;
+	p = mod(p + module / 2.0, module) - module / 2.0;
+	return p;
 }
 
-float dist_sphere(const vec3 point, int i) {
-	return distance(point, sph_o[i]) - sph_r[i];
+vec3 moduled_point_plane_xy(vec3 p, float module) {
+	if (module == 0.0) {
+		return p;
+	}
+	p.xy = mod(p.xy + module / 2.0, module) - module / 2.0;
+	return p;
+}
+
+vec3 twisted_point(vec3 p, vec3 k) { // remade id code
+	vec3 q = p;
+	float c = 0.0;
+	float s = 0.0;
+	if (k.x != 0.0) {
+		c = cos(k.x * p.x);
+		s = sin(k.x * p.x);
+		mat2  m = mat2(c, -s, s, c);
+		q = vec3(m * q.yz, q.x);
+	}
+	if (k.y != 0.0) {
+		c = cos(k.y * p.y);
+		s = sin(k.y * p.y);
+		mat2  m = mat2(c, -s, s, c);
+		q = vec3(m * q.xz, q.y);
+	}
+	if (k.z != 0.0) {
+		c = cos(k.z * p.z);
+		s = sin(k.z * p.z);
+		mat2  m = mat2(c, -s, s, c);
+		q = vec3(m * q.xy, q.z);
+	}
+    return q;
+}
+
+vec3 bended_point(vec3 p, vec3 k) { // remade iq code
+	vec3 q = p;
+	float c = 0.0;
+	float s = 0.0;
+	if (k.x != 0.0) {
+		c = cos(-k.x * p.y);
+		s = sin(-k.x * p.y);
+		mat2  m = mat2(c, -s, s, c);
+		vec2 a = m*p.xy;
+		q = vec3(a.y, a.x, p.z);
+	}
+	if (k.y != 0.0) {
+		c = cos(k.y * p.x);
+		s = sin(k.y * p.x);
+		mat2  m = mat2(c, -s, s, c);
+		q = vec3(m*p.xy,p.z);
+	}
+	if (k.z != 0.0) {
+		c = cos(-k.z * p.y);
+		s = sin(-k.z * p.y);
+		mat2  m = mat2(c, -s, s, c);
+		vec2 a = m*p.zy;
+		q = vec3(a.y, p.x, a.x);
+	}
+    return q;
+}
+
+
+vec3 repeated_point(vec3 p, float module, vec3 l) {
+    vec3 q = p - module*clamp(round(p / module),-l,l);
+    return q;
+}
+
+float dist_sphere(const vec3 p, vec3 pos, float r) {
+	return distance(p, pos) - r;
 }
 
 float dist_box(vec3 p, vec3 pos, vec3 box) {
 	vec3 q = p - pos;
     q = abs(q) - box;
-	return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+	return length(max(q, 0));
 }
 
-float dist_box_bended(vec3 p, vec3 pos, vec3 box, vec2 angle) {
-	p = rotate(p, angle);
-	return dist_box(p, pos, box);
+float dist_cross(vec3 p, vec3 pos, float size) {
+	float box1 = dist_box(p, pos, vec3(size, size, inf * 2.0));
+	float box2 = dist_box(p, pos, vec3(size, inf * 2.0, size));
+	float box3 = dist_box(p, pos, vec3(inf * 2.0, size, size));
+	return union_sdf(union_sdf(box1, box2), box3);
 }
 
-float dist_sphere_triged (const vec3 point, int i) {
-	vec3 p = point;
-	float amp = 0.1;
-	float cord = 10.0;
-	float time_coef = 1.0;
-	p.x = point.x + amp * sin(point.x * cord + time * time_coef);
-	p.y = point.y + amp * sin(point.y * cord + time * time_coef);
-	p.z = point.z + amp * sin(point.z * cord + time * time_coef);
-	float dist = distance(p, sph_o[i]) - sph_r[i];
-	return dist;
+float scene_distance(vec3 p) {	
+	MODULE = 0;
+	float module = 4.5;
+
+	float s1 = dist_sphere(p, vec3(0, 0, 0), 2.0);
+	// float box1 = dist_box(twisted_point(p, vec3(0, 0, 0.3)), vec3(0, 0, 0), vec3(1.5)) - 0.2;
+	vec3 q = moduled_point(p, module);
+	float box1 = dist_box(bended_point(repeated_point(p, module, vec3(3, 1, 0)), vec3(0, 0, 0.3 * sin(time)) * sin(time + p.y - q.y) * sin(time + p.x - q.x)), vec3(0, 0, 0.2 * sin(time + p.x - q.x) * sin(time + p.y - q.y)), vec3(2, 2, 0.3)) - 0.1;
+
+	float grid = dist_box(moduled_point(p, 0.2), vec3(0, 0, 0), vec3(0.1));
+	float dist = union_sdf_smooth(s1, box1, 0.2);
+
+	return box1;
 }
 
-float scene_distance_standart(const vec3 point) {
-	float dist = inf;
-	for (int i = 0; i <= spheres_count; ++i) {
-		dist = min(dist, dist_sphere(point, i));
-	}
-	return dist;
-}
-
-float scene_distance(vec3 point) {
-	int mode = 0;
-	if (mode > 0) {
-		return scene_distance_standart(point);
-	}
-	
-	float module = MODULE;
-	float s1 = dist_sphere(point, 0);
-	float s2 = dist_sphere(point, 1);
-	float s3 = dist_sphere(point, 2);
-	float box1 = dist_box_bended(point, vec3(0, 0, 5), vec3(1, 1, 7), vec2(point.z, 0) * sin(time / 2));
-	float box2 = dist_box_bended(point, vec3(0, 0, 0), vec3(1, 10, 1), vec2(0, point.y) * sin(time / 3));
-	//float s2 = dist_inf_spheres(point, 1, module);
-	//float s3 = dist_inf_spheres(point, 2, module);
-	//float s4 = dist_inf_spheres(point, 3, module);
-	//float s5 = dist_inf_spheres(point, 4, module);
-	//float box = dist_inf_boxes(point, vec3(0, 0, 0), 3.0, module);
-	
-	float ret = union_sdf(box1, s1, 0.5);
-	ret = union_sdf(ret, box2, 0.5);
-	ret = intersect_sdf(ret, s2);
-	ret = union_sdf(ret, s3, 1);
-
-	return ret; 
-}
-
-vec3 scene_normal(const vec3 point) {
-	float d = scene_distance(point);
+vec3 scene_normal(const vec3 p) {
+	float d = scene_distance(p);
     vec2 e = vec2(DELTA, 0);
-    vec3 n = d - vec3(scene_distance(point - e.xyy), scene_distance(point - e.yxy), scene_distance(point - e.yyx));
+    vec3 n = d - vec3(scene_distance(p - e.xyy), scene_distance(p - e.yxy), scene_distance(p - e.yyx));
     return normalize(n);
 }
 
@@ -169,6 +227,7 @@ vec3 phong_light(vec3 p, vec3 camera_pos, vec3 light_pos, vec3 color_diffuse, ve
 
 vec3 victorious_march(const vec3 origin, const vec3 direction) {
 	vec3 dir = normalize(direction);
+	dir.z *= -1; // I just reverse Z axis cuz I want
 	vec3 p = origin;
 	vec3 color = vec3(0, 0, 0);
 

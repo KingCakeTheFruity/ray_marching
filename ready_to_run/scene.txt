@@ -1,24 +1,22 @@
 width 50 height 50
 screen_distance 100
-resolution_coef 10
+resolution_coef 9
 pixel_coef 1
 
 depth 5
 
 cam_pos (0, 0, 0)
-cam_dir (1, 0, 0)
+cam_dir (1, 0, 0.2)
 
-player (-20, 1, -5) 0 ((0.5, 0.75, 0.25) 0 0 0 0 0 (0, 1.57, 0) 0)
+player (-15, 0, 3) 0 ((0.5, 0.75, 0.25) 0 0 0 0 0 (0, 1.57, 0) 0)
 to_display_player 0
 camera_offset (0, 0, 0)
 
 Light point (-5, 15, 0) (0.5, 1, 0.2) 1
 Light point (-5, -15, 0) (0.2, 0.4, 0.7) 1
-Light point (-5, 15, 15) (0.8, 0.5, 0.3) 1
-Light point (0, 0, -20) (0.8, 0, 0) 1
+Light point (0, 0, 10) (0.8, 0, 0) 1
 
-Primitive Sphere (0, 0, 0) 2 ((1, 1, 1) 0 0 0 0 0 (0, 0, 0) 0)
-Primitive Sphere (0, 0, 0) 4 ((1, 1, 1) 0 0 0 0 0 (0, 0, 0) 0)
-Primitive Sphere (0, 0, -2.3) 1 ((0.5, 0.5, 1) 0 0 0 0 0 (0, 0, 0) 0)
+Primitive Sphere (0, 0, 0) 3 ((1, 1, 1) 0 0 0 0 0 (0, 0, 0) 0)
+Primitive Sphere (0, 0, 0) 2.9 ((0, 0, 1) 0 0 0 0 0 (0, 0, 0) 0)
 
 Primitive Sphere (0, 0, 0) 1 ((1, 1, 1) 0 0 0 0 0 (0, 0, 0) 0)
