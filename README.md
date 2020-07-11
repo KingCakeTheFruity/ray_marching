@@ -1,3 +1,3 @@
 # ray_marching
 Just toying with some SDF
-Control: wasd + qe + shift for moving camera, zxc for scaling camera
+Control: WASD + QE + SHIFT for moving camera, ZXC for scaling camera, F for screenshots
