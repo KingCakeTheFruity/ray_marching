@@ -16,9 +16,10 @@ struct Light {
     Vector color;
     std::string type;
     double distance_coef;
+    double stable_distance;
 
     Light();
-    Light(const Vector origin, const Vector color_, std::string type_, double distance_coef_);
+    Light(const Vector origin, const Vector color_, std::string type_, double distance_coef_, double stable_distance_);
     Vector calculate_effect(const Vector &point, Vector &normal, const Primitive *obj, const std::vector<Primitive*> &objects);
 };
 

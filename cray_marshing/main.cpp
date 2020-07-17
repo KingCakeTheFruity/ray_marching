@@ -76,6 +76,7 @@ int main() {
 
     //===============================
 
+    int scr_cnt = 0;
     while (window.isOpen()) {
         cur_time = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = cur_time - sec_start;
@@ -201,6 +202,7 @@ int main() {
         shader.setUniformArray("light_o", scene.lights_origin, MAX_OBJ_COUNT);
         shader.setUniformArray("light_color", scene.lights_color, MAX_OBJ_COUNT);
         shader.setUniformArray("light_intensity", scene.lights_intensity, MAX_OBJ_COUNT);
+        shader.setUniformArray("light_stable_distance", scene.lights_stable_distances, MAX_OBJ_COUNT);
 
         scaler.draw(sprite, &shader);
         scaler.display();
@@ -208,7 +210,11 @@ int main() {
         window.display();
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
-            take_screenshot(window, "screenshot.png");
+            take_screenshot(window, "screenshot" + to_string(scr_cnt) + ".png");
+            scr_cnt += 1;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
+            cout << scene.camera.o << " | " << scene.camera.d << '\n';
         }
     }
 

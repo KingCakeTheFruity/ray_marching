@@ -3,11 +3,12 @@
 
 Light::Light() {}
 
-Light::Light(const Vector origin, const Vector color_, std::string type_, double distance_coef_) {
+Light::Light(const Vector origin, const Vector color_, std::string type_, double distance_coef_, double stable_distance_) {
     o = origin;
     color = color_;
     type = type_;
     distance_coef = distance_coef_;
+    stable_distance = stable_distance_;
 }
 
 Intersection test_ray(Ray &ray, const std::vector<Primitive*> &objects, const Primitive *to_ignore);
@@ -53,11 +54,14 @@ Vector Light::calculate_effect(const Vector &point, Vector &normal, const Primit
     }
 }
 
+#include <iostream>
+
 std::istream& operator>>(std::istream& input_stream, Light &light) {
     std::string type;
     Vector o, color;
     double distance_coef;
-    input_stream >> type >> o >> color >> distance_coef;
-    light = Light(o, color, type, distance_coef);
+    double stable_distance;
+    input_stream >> type >> o >> color >> distance_coef >> stable_distance;
+    light = Light(o, color, type, distance_coef, stable_distance);
     return input_stream;
 }

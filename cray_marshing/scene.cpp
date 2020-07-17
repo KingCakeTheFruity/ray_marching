@@ -56,6 +56,7 @@ Scene::Scene(std::string filename) {
             lights_origin[lights_cnt] = to_sf_vector(light.o);
             lights_color[lights_cnt] = to_sf_vector(light.color);
             lights_intensity[lights_cnt] = light.distance_coef;
+            lights_stable_distances[lights_cnt] = light.stable_distance;
         } else if (type == "Model") {
             Model model;
             fs >> model;

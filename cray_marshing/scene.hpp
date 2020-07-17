@@ -35,6 +35,7 @@ struct Scene {
     sf::Vector3f lights_origin[MAX_OBJ_COUNT];
     sf::Vector3f lights_color[MAX_OBJ_COUNT];
     float lights_intensity[MAX_OBJ_COUNT];
+    float lights_stable_distances[MAX_OBJ_COUNT];
 
     Scene();
     Scene(std::string filename);
