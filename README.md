@@ -1,3 +1,17 @@
-# ray_marching
-Just toying with some SDF
-Control: WASD + QE + SHIFT for moving camera, ZXC for scaling camera, F for screenshots
+# RAY MARCHING
+SDF appered to be such a powerful thing!
+
+## How to use
+Build project and run binary, that simple :)
+
+Suggested IDE for building this is VS. SFML lib must be linked to the project so it could be built correctly.
+
+### Control
+```
+WASD; QE; SHIFT - moving
+ZXC - scaling
+F - screenshot
+```
+
+### Scene editing
+Check out `scene_distance` function in `shader.frag` file, it defines the scene
