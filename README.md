@@ -4,7 +4,7 @@ SDF appered to be such a powerful thing!
 ## How to use
 Build project and run binary, that simple :)
 
-Suggested IDE for building this is VS. SFML lib must be linked to the project so it could be built correctly.
+Suggested IDE for building is VS. SFML lib must be linked to the project so it could be built correctly.
 
 ### Control
 ```
