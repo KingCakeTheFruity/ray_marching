@@ -17,6 +17,7 @@ F - screenshot
 Check out `scene_distance` function in the `shader.frag` file, it defines the scene
 
 ## Some resuts
+(more in the showcase folder)
 ![A simple house build of SDFs](https://github.com/KingCakeTheFruity/ray_marching/blob/master/showcase/priton.jpg)
 ![A temple](https://github.com/KingCakeTheFruity/ray_marching/blob/master/showcase/temple.jpg)
 ![Platforms](https://github.com/KingCakeTheFruity/ray_marching/blob/master/showcase/platforms.jpg)
