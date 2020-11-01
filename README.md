@@ -8,10 +8,10 @@ Suggested IDE for building is VS. SFML lib must be linked to the project so it c
 
 ### Control
 ```
-WASD; QE; SHIFT - moving
+WASD, QE, SHIFT - moving
 ZXC - scaling
 F - screenshot
 ```
 
 ### Scene editing
-Check out `scene_distance` function in `shader.frag` file, it defines the scene
+Check out `scene_distance` function in the `shader.frag` file, it defines the scene
